@@ -1,8 +1,9 @@
-import { Box, Button, Container, Typography, Paper } from '@mui/material';
+import { Box, Container, Typography, Paper } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
-import PhoneIcon from '@mui/icons-material/Phone';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import LoginButton from '@/components/LoginButton';
+import RegisterButton from '@/components/RegisterButton';
 
 export default function Home(): React.ReactElement {
   return (
@@ -68,22 +69,8 @@ export default function Home(): React.ReactElement {
           </Box>
         </Paper>
 
-        <Button
-          variant="contained"
-          size="large"
-          startIcon={<PhoneIcon />}
-          sx={{
-            px: [3, 4, 6],
-            py: [1, 1.5],
-          }}
-          href="/register"
-        >
-          Register By Phone Number
-        </Button>
-
-        <Typography variant="body2" color="text.secondary" sx={{ mt: [3, 4] }}>
-          Access is restricted to invited phone numbers
-        </Typography>
+        <LoginButton />
+        <RegisterButton />
       </Box>
     </Container>
   );
