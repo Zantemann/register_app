@@ -1,8 +1,8 @@
 import User from '@/models/userModel';
-import dbConnect from '@/lib/dbCOnnect';
+import dbConnect from '@/lib/dbConnect';
 import { NextResponse, NextRequest } from 'next/server';
 
-// Validate if phone number exists in the database
+// Get user
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> },

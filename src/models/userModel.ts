@@ -11,8 +11,8 @@ const userSchema: Schema = new Schema({
   },
   registerStatus: {
     type: String,
-    enum: ['pending', 'approved', 'rejected'],
-    default: 'pending',
+    enum: ['attending', 'not_attending', 'not_responded'],
+    default: 'not_responded',
   },
   guests: {
     type: [{ type: Schema.Types.ObjectId, ref: 'User', default: [] }],
