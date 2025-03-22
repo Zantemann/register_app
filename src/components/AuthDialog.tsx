@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { MuiTelInput } from 'mui-tel-input';
+import { useRouter } from 'next/navigation';
 
 const STEPS = ['Phone Number', 'Login Code'];
 const RESEND_TIMEOUT = 60; // seconds
@@ -31,7 +32,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps): React.Re
   const [verificationCode, setVerificationCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [resendTimer, setResendTimer] = useState(0);
-
+  const router = useRouter();
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (resendTimer > 0) {
@@ -52,10 +53,23 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps): React.Re
     setError(null);
   };
 
+  const formatPhoneNumber = (phone: string) => {
+    // Remove all non-digit characters except +
+    return phone.replace(/[^\d+]/g, '');
+  };
+
   const handleResendCode = async () => {
     try {
-      // TODO: Implement SMS resending logic here
-      // await sendSMSVerification(phoneNumber);
+      const formattedPhone = formatPhoneNumber(phoneNumber);
+      const response = await fetch(`/api/otp/send/${formattedPhone}`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to resend OTP');
+      }
+
       setResendTimer(RESEND_TIMEOUT);
       setError(null);
     } catch (err) {
@@ -66,13 +80,34 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps): React.Re
   const handleNext = async () => {
     try {
       if (activeStep === 0) {
-        // TODO: Implement SMS sending logic here
-        // await sendSMSVerification(phoneNumber);
+        const formattedPhone = formatPhoneNumber(phoneNumber);
+        const response = await fetch(`/api/otp/send/${formattedPhone}`, {
+          method: 'POST',
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to send OTP');
+        }
+
         setActiveStep(1);
         setResendTimer(RESEND_TIMEOUT);
       } else if (activeStep === 1) {
-        // TODO: Implement verification code checking logic here
-        // await verifyCode(verificationCode);
+        const formattedPhone = formatPhoneNumber(phoneNumber);
+        const response = await fetch(`/api/otp/verify/${formattedPhone}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ otp: verificationCode }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to verify OTP');
+        }
+
+        router.refresh();
         onClose();
       }
     } catch (err) {

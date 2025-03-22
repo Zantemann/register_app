@@ -2,12 +2,17 @@ import { Box, Container, Typography, Paper } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import LoginButton from '@/components/LoginButton';
+import AuthButton from '@/components/AuthButton';
 import RegisterButton from '@/components/RegisterButton';
+import UserInfoBar from '@/components/UserInfoBar';
+import { getSession } from '@/auth/session';
 
-export default function Home(): React.ReactElement {
+export default async function Home(): Promise<React.ReactElement> {
+  const session = await getSession();
+
   return (
     <Container maxWidth="md" sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+      {session && <UserInfoBar user={session.userId} />}
       <Box
         sx={{
           display: 'flex',
@@ -69,8 +74,8 @@ export default function Home(): React.ReactElement {
           </Box>
         </Paper>
 
-        <LoginButton />
-        <RegisterButton />
+        {!session && <AuthButton />}
+        {session && <RegisterButton />}
       </Box>
     </Container>
   );

@@ -22,14 +22,20 @@ export async function POST(
       return NextResponse.json({ error: 'Phone number is required' }, { status: 400 });
     }
 
+    // Remove any non-digit characters except + from the phone number
+    const cleanPhoneNumber = phoneNumber.replace(/[^\d+]/g, '');
+
     await dbConnect();
-    const user = await User.findOne({ phoneNumber });
+    const user = await User.findOne({ phoneNumber: cleanPhoneNumber });
     if (!user) {
       return NextResponse.json(
         { error: 'Phone number not found from invitation list' },
         { status: 404 },
       );
     }
+
+    // for testing purposes
+    return NextResponse.json({ status: 200 });
 
     const twilioResponse = await client.verify.v2.services(serviceId).verifications.create({
       channel: 'sms',
