@@ -45,13 +45,19 @@ export const getSession = cache(async () => {
   }
 
   await dbConnect();
-  const session = await Session.findOne({ sessionId }).populate('userId');
+  const session = await Session.findOne({ sessionId }).populate({
+    path: 'userId',
+    populate: {
+      path: 'guests',
+    },
+  });
   if (!session) {
     return;
   }
 
-  // Convert MongoDB ObjectId to string
-  return session as ISession;
+  // Convert Mongoose document to plain object and serialize ObjectIds
+  const plainSession = JSON.parse(JSON.stringify(session));
+  return plainSession as ISession;
 });
 
 // Delete the current session

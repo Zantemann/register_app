@@ -18,46 +18,16 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import { useRouter } from 'next/navigation';
+import { AttendanceStatus, IUser } from '@/types';
 
 interface RegisterDialogProps {
   open: boolean;
   onClose: () => void;
-  onRegister: (registrationData: RegistrationData) => void;
+  user: IUser;
 }
 
-type AttendanceStatus = 'attending' | 'not_attending' | 'not_responded';
-
-interface RegistrationData {
-  fullName: string;
-  registerStatus: AttendanceStatus;
-  allergies?: string;
-  guests: Array<{
-    fullName: string;
-    registerStatus: AttendanceStatus;
-    allergies?: string;
-  }>;
-}
-
-// Placeholder data
-const PLACEHOLDER_DATA: RegistrationData = {
-  fullName: 'John Smith',
-  registerStatus: 'not_responded',
-  allergies: '',
-  guests: [
-    {
-      fullName: 'Jane Smith',
-      registerStatus: 'not_responded',
-      allergies: '',
-    },
-    {
-      fullName: 'Mike Johnson',
-      registerStatus: 'not_responded',
-      allergies: '',
-    },
-  ],
-};
-
-const getStatusStyles = (status: AttendanceStatus) => {
+const getStatusStyles = (status: string) => {
   switch (status) {
     case 'attending':
       return {
@@ -101,66 +71,77 @@ const getStatusStyles = (status: AttendanceStatus) => {
 export default function RegisterDialog({
   open,
   onClose,
-  onRegister,
+  user,
 }: RegisterDialogProps): React.ReactElement {
-  const [registrationData, setRegistrationData] = useState<RegistrationData>(PLACEHOLDER_DATA);
+  const [registerStatus, setRegisterStatus] = useState<AttendanceStatus>(user.registerStatus);
+  const [allergies, setAllergies] = useState(user.allergies || '');
+  const [guests, setGuests] = useState(user.guests || []);
   const [error, setError] = useState<string | null>(null);
-
-  const handleRegistrationDataChange =
-    (field: keyof Omit<RegistrationData, 'guests'>) =>
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setRegistrationData((prev) => ({
-        ...prev,
-        [field]: event.target.value,
-      }));
-      setError(null);
-    };
+  const router = useRouter();
+  // Reset form when dialog is closed
+  const handleClose = (_: object, _reason?: string) => {
+    // Reset form values when closing via backdrop, escape key, or cancel button
+    setRegisterStatus(user.registerStatus);
+    setAllergies(user.allergies || '');
+    setGuests(user.guests || []);
+    setError(null);
+    onClose();
+  };
 
   const handleStatusChange = (_: React.MouseEvent<HTMLElement>, value: AttendanceStatus) => {
     if (value !== null) {
-      setRegistrationData((prev) => ({
-        ...prev,
-        registerStatus: value,
-      }));
+      setRegisterStatus(value);
       setError(null);
     }
   };
 
-  const handleGuestStatusChange = (
-    index: number,
-    _: React.MouseEvent<HTMLElement>,
-    value: AttendanceStatus,
-  ) => {
+  const handleGuestStatusChange = (index: number, value: AttendanceStatus) => {
     if (value !== null) {
-      setRegistrationData((prev) => ({
-        ...prev,
-        guests: prev.guests.map((guest, i) =>
-          i === index ? { ...guest, registerStatus: value } : guest,
-        ),
-      }));
+      const updatedGuests = [...guests];
+      updatedGuests[index] = { ...updatedGuests[index], registerStatus: value };
+      setGuests(updatedGuests);
       setError(null);
     }
   };
 
-  const handleGuestChange = (index: number, field: string, value: string) => {
-    setRegistrationData((prev) => ({
-      ...prev,
-      guests: prev.guests.map((guest, i) => (i === index ? { ...guest, [field]: value } : guest)),
-    }));
-    setError(null);
+  const handleGuestAllergiesChange = (index: number, value: string) => {
+    const updatedGuests = [...guests];
+    updatedGuests[index] = { ...updatedGuests[index], allergies: value };
+    setGuests(updatedGuests);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     try {
-      onRegister(registrationData);
+      const response = await fetch(`/api/users/${user._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          registerStatus,
+          allergies,
+          guests: guests.map((guest) => ({
+            _id: guest._id,
+            registerStatus: guest.registerStatus,
+            allergies: guest.allergies,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update registration');
+      }
+
+      router.refresh();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : 'Failed to update registration');
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
       <Box sx={{ position: 'relative', bgcolor: 'background.paper' }}>
         <Box
           sx={{
@@ -222,7 +203,7 @@ export default function RegisterDialog({
                 gutterBottom
                 sx={{ fontWeight: 'medium', letterSpacing: 0.5 }}
               >
-                {registrationData.fullName}
+                {user.fullName}
               </Typography>
               <Box
                 sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'flex-start' }}
@@ -231,7 +212,7 @@ export default function RegisterDialog({
                   Please confirm your attendance
                 </Typography>
                 <ToggleButtonGroup
-                  value={registrationData.registerStatus}
+                  value={registerStatus}
                   exclusive
                   onChange={handleStatusChange}
                   aria-label="attendance status"
@@ -265,8 +246,8 @@ export default function RegisterDialog({
 
             <TextField
               label="Dietary Requirements or Preferences"
-              value={registrationData.allergies}
-              onChange={handleRegistrationDataChange('allergies')}
+              value={allergies}
+              onChange={(e) => setAllergies(e.target.value)}
               fullWidth
               multiline
               rows={2}
@@ -274,7 +255,7 @@ export default function RegisterDialog({
             />
           </Paper>
 
-          {registrationData.guests.length > 0 && (
+          {guests.length > 0 && (
             <Paper
               elevation={2}
               sx={{
@@ -296,7 +277,7 @@ export default function RegisterDialog({
                 Additional Guests
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {registrationData.guests.map((guest, index) => (
+                {guests.map((guest, index) => (
                   <Box key={index}>
                     {index > 0 && <Divider sx={{ my: 4 }} />}
                     <Box>
@@ -317,7 +298,7 @@ export default function RegisterDialog({
                         <ToggleButtonGroup
                           value={guest.registerStatus}
                           exclusive
-                          onChange={(e, v) => handleGuestStatusChange(index, e, v)}
+                          onChange={(_, v) => handleGuestStatusChange(index, v)}
                           aria-label="guest attendance status"
                           size="large"
                           sx={{
@@ -355,8 +336,8 @@ export default function RegisterDialog({
                       </Box>
                       <TextField
                         label="Dietary Requirements or Preferences"
-                        value={guest.allergies}
-                        onChange={(e) => handleGuestChange(index, 'allergies', e.target.value)}
+                        value={guest.allergies || ''}
+                        onChange={(e) => handleGuestAllergiesChange(index, e.target.value)}
                         fullWidth
                         multiline
                         rows={2}
@@ -371,7 +352,7 @@ export default function RegisterDialog({
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 4 }}>
             <Button
-              onClick={onClose}
+              onClick={() => handleClose({}, 'cancel')}
               variant="outlined"
               size="large"
               sx={{
@@ -403,4 +384,3 @@ export default function RegisterDialog({
     </Dialog>
   );
 }
-

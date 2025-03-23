@@ -75,7 +75,7 @@ export default async function Home(): Promise<React.ReactElement> {
         </Paper>
 
         {!session && <AuthButton />}
-        {session && <RegisterButton />}
+        {session && <RegisterButton user={session?.userId} />}
       </Box>
     </Container>
   );

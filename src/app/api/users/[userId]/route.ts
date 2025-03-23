@@ -1,31 +1,7 @@
 import User from '@/models/userModel';
 import dbConnect from '@/lib/dbConnect';
 import { NextResponse, NextRequest } from 'next/server';
-
-// Get user
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ userId: string }> },
-) {
-  try {
-    const { userId } = await params;
-
-    if (!userId) {
-      return NextResponse.json({ error: 'UserId is required' }, { status: 400 });
-    }
-
-    await dbConnect();
-    const user = await User.findById(userId).populate('guests');
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    return NextResponse.json({ user }, { status: 200 });
-  } catch (err) {
-    return NextResponse.json({ error: 'Internal server error', err }, { status: 500 });
-  }
-}
+import { getSession } from '@/auth/session';
 
 // Update user registration
 export async function PUT(
@@ -46,6 +22,11 @@ export async function PUT(
       return NextResponse.json({ error: 'Registration status is required' }, { status: 400 });
     }
 
+    const currentSession = await getSession();
+    if (currentSession?.userId._id !== userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     await dbConnect();
     const user = await User.findById(userId);
 
@@ -59,18 +40,20 @@ export async function PUT(
       user.allergies = allergies;
     }
 
-    // Update guests if provided
+    // Update guests
     if (guests && Array.isArray(guests)) {
-      // Update existing guests
       for (const guest of guests) {
         if (guest._id) {
-          const existingGuest = await User.findById(guest._id);
-          if (existingGuest) {
-            existingGuest.registerStatus = guest.registerStatus;
-            if (guest.allergies !== undefined) {
-              existingGuest.allergies = guest.allergies;
+          // Check if the guest is in the current user's guests
+          if (currentSession?.userId.guests.some((g) => g._id === guest._id)) {
+            const existingGuest = await User.findById(guest._id);
+            if (existingGuest) {
+              existingGuest.registerStatus = guest.registerStatus;
+              if (guest.allergies !== undefined) {
+                existingGuest.allergies = guest.allergies;
+              }
+              await existingGuest.save();
             }
-            await existingGuest.save();
           }
         }
       }

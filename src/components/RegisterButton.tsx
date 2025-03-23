@@ -5,44 +5,20 @@ import HowToRegIcon from '@mui/icons-material/HowToReg';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { useState } from 'react';
 import RegisterDialog from './RegisterDialog';
+import { IUser } from '@/types';
 
-type AttendanceStatus = 'attending' | 'not_attending' | 'not_responded';
-
-interface RegistrationData {
-  fullName: string;
-  registerStatus: AttendanceStatus;
-  allergies?: string;
-  guests: Array<{
-    fullName: string;
-    registerStatus: AttendanceStatus;
-    allergies?: string;
-  }>;
-}
-
-interface RegisterButtonProps {
-  currentStatus?: AttendanceStatus;
-}
-
-export default function RegisterButton({
-  currentStatus = 'not_responded',
-}: RegisterButtonProps): React.ReactElement {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+export default function RegisterButton({ user }: { user: IUser }): React.ReactElement {
+  const [open, setOpen] = useState(false);
 
   const handleOpen = () => {
-    setIsDialogOpen(true);
+    setOpen(true);
   };
 
   const handleClose = () => {
-    setIsDialogOpen(false);
+    setOpen(false);
   };
 
-  const handleRegister = (registrationData: RegistrationData) => {
-    // For demonstration, just log the data
-    console.log('Registration data:', registrationData);
-    handleClose();
-  };
-
-  const isFirstTime = currentStatus === 'not_responded';
+  const isFirstTime = user.registerStatus === 'not_responded';
 
   return (
     <>
@@ -68,8 +44,7 @@ export default function RegisterButton({
       >
         {isFirstTime ? 'Register Now' : 'Update Attendance'}
       </Button>
-      <RegisterDialog open={isDialogOpen} onClose={handleClose} onRegister={handleRegister} />
+      <RegisterDialog open={open} onClose={handleClose} user={user} />
     </>
   );
 }
-
