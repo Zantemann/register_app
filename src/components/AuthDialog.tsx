@@ -19,7 +19,7 @@ import { MuiTelInput } from 'mui-tel-input';
 import { useRouter } from 'next/navigation';
 
 const STEPS = ['Phone Number', 'Login Code'];
-const RESEND_TIMEOUT = 60; // seconds
+const RESEND_TIMEOUT = 30; // seconds
 
 interface AuthDialogProps {
   open: boolean;
@@ -33,6 +33,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps): React.Re
   const [error, setError] = useState<string | null>(null);
   const [resendTimer, setResendTimer] = useState(0);
   const router = useRouter();
+
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (resendTimer > 0) {
@@ -55,6 +56,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps): React.Re
 
   const formatPhoneNumber = (phone: string) => {
     // Remove all non-digit characters except +
+    console.log('Formatting phone number:', phone);
     return phone.replace(/[^\d+]/g, '');
   };
 
@@ -121,9 +123,18 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps): React.Re
     setVerificationCode('');
   };
 
+  // Reset form values when closing via backdrop, escape key, or cancel button
+  const handleClose = (_: object, _reason?: string) => {
+    setPhoneNumber('');
+    setVerificationCode('');
+    setActiveStep(0);
+    setError(null);
+    onClose();
+  };
+
   const isNextDisabled = () => {
     if (activeStep === 0) {
-      return !phoneNumber || phoneNumber.length < 10;
+      return !phoneNumber || phoneNumber.length < 9 || resendTimer > 0;
     }
     if (activeStep === 1) {
       return !verificationCode || verificationCode.length !== 6;
@@ -132,7 +143,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps): React.Re
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>Login with Phone Number</DialogTitle>
       <DialogContent>
         <Stepper activeStep={activeStep} sx={{ py: 4 }}>
@@ -159,6 +170,11 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps): React.Re
                 fullWidth
                 defaultCountry="FI"
               />
+              {resendTimer > 0 && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                  You can request a new code in {resendTimer} seconds
+                </Typography>
+              )}
             </>
           )}
 
@@ -198,7 +214,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps): React.Re
         </Box>
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-          <Button onClick={onClose} color="inherit">
+          <Button onClick={handleClose} color="inherit">
             Cancel
           </Button>
           <Box>
