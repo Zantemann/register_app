@@ -69,7 +69,7 @@ Open http://localhost:3000 in your browser to view the application.
 
 ## Deployment
 
-To deploy the application, use the [Vercel Platform](https://vercel.com) . Follow these steps:
+To deploy the application, use the [Vercel Platform](https://vercel.com). Follow these steps:
 
 1. Push your code to a GitHub repository.
 2. Connect your repository to Vercel.

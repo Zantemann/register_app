@@ -68,6 +68,88 @@ User's personal data and session information are stored in a MongoDB database an
 - A guest can view and edit the data of additional guests, which may lead to privacy concerns.
 - The additional guests' data can potentially be edited without their knowledge, leading to potential misuse or conflicts.
 
-# OWASP Top 10 Overview
+# OWASP 2021 Top 10 Overview
+
+Evaluating Register App against the OWASP 2021 Top 10 security risks.
+
+## A01:2021-Broken Access Control
+
+**Findings**:
+
+- The application checks user authorization at the API level using session validation
+- Each user can only access/modify their own and their guests' data through API endpoint checks
+- Missing API level rate limiting on critical API endpoints:
+  - OTP request endpoint: `/api/otp/send/[phoneNumber]`
+  - OTP verification endpoint: `/api/otp/verify/[phoneNumber]`
+  - User data endpoint: `/api/users/[userId]`
+
+**Recommendations**:
+
+- Implement middleware for consistent access control
+- Implement rate limiter for critical api routes
+
+**Reflection**:
+
+- The application currently has only one secured route. While middleware for consistent access control is not immediately necessary, it would be beneficial for future application expansion.
+- OTP-related endpoints already have rate limiting through the Twilio API:
+
+  - Additional endpoint-level rate limiting would provide more control but is not critical
+  - Implementing rate limiting for the user data endpoint would help prevent database abuse
+
+## A02:2021-Cryptographic Failures
+
+**Findings**:
+
+- Session management:
+
+  - Session IDs are generated using `crypto.randomBytes`, which is cryptographically secure.
+  - Session cookies use secure flags (HttpOnly, Secure, SameSite) with cookie expiration time.
+  - Sessions are stored and validated using database to exclude risk of session manipulation.
+
+- Sensitive data such as API keys and connection strings are stored in environment variables.
+- There is no encryption for sensitive user data stored in the database.
+
+**Recommendations**:
+
+- Encrypt sensitive data in the database using a strong encryption algorithm.
+
+**Reflection**:
+
+- Current session handling is cryptographically secure.
+- The main risk is unencrypted sensitive data in the database.
+
+## A03:2021-Injection
+
+**Findings**:
+
+- API endpoints accept user input without comprehensive validation:
+  - Phone numbers are partially sanitized using regex
+  - OTP codes are validated only for length
+  - User data updates lack input validation
+- MongoDB queries use Mongoose schema which provides basic protection
+
+**Recommendations**:
+
+- Implement comprehensive input validation
+
+**Reflection**:
+
+- Current implementation relies mostly on Mongoose schema validation
+- Adding proper input validation would prevent injection attacks and ensure data integrity
+- Input validation should be implemented both client-side and server-side
+
+## A04:2021-Insecure Design
+
+## A05:2021-Security Misconfiguration
+
+## A06:2021-Vulnerable and Outdated Components
+
+## A07:2021-Identification and Authentication Failures
+
+## A08:2021-Software and Data Integrity Failures
+
+## A09:2021-Security Logging and Monitoring Failures
+
+## A10:2021-Server-Side Request Forgery
 
 # Future Improvements
