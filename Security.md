@@ -76,8 +76,8 @@ Evaluating Register App against the OWASP 2021 Top 10 security risks.
 
 **Findings**:
 
-- The application checks user authorization at the API level using session validation
-- Each user can only access/modify their own and their guests' data through API endpoint checks
+- The application checks user authorization at the API level using session validation.
+- Each user can only access/modify their own and their guests' data through API endpoint checks.
 - Missing API level rate limiting on critical API endpoints:
   - OTP request endpoint: `/api/otp/send/[phoneNumber]`
   - OTP verification endpoint: `/api/otp/verify/[phoneNumber]`
@@ -85,16 +85,16 @@ Evaluating Register App against the OWASP 2021 Top 10 security risks.
 
 **Recommendations**:
 
-- Implement middleware for consistent access control
-- Implement rate limiter for critical api routes
+- Implement middleware for consistent access control.
+- Implement rate limiter for critical API routes.
 
 **Reflection**:
 
 - The application currently has only one secured route. While middleware for consistent access control is not immediately necessary, it would be beneficial for future application expansion.
 - OTP-related endpoints already have rate limiting through the Twilio API:
 
-  - Additional endpoint-level rate limiting would provide more control but is not critical
-  - Implementing rate limiting for the user data endpoint would help prevent database abuse
+  - Additional endpoint-level rate limiting would provide more control but is not critical.
+  - Implementing rate limiting for the user data endpoint would help prevent database abuse.
 
 ## A02:2021-Cryptographic Failures
 
@@ -115,7 +115,7 @@ Evaluating Register App against the OWASP 2021 Top 10 security risks.
 
 **Reflection**:
 
-- Current session handling is cryptographically secure.
+- Current session handling implementation is cryptographically secure.
 - The main risk is unencrypted sensitive data in the database.
 
 ## A03:2021-Injection
@@ -123,33 +123,137 @@ Evaluating Register App against the OWASP 2021 Top 10 security risks.
 **Findings**:
 
 - API endpoints accept user input without comprehensive validation:
-  - Phone numbers are partially sanitized using regex
-  - OTP codes are validated only for length
-  - User data updates lack input validation
-- MongoDB queries use Mongoose schema which provides basic protection
+  - Phone numbers are partially sanitized using regex.
+  - OTP codes are validated only for length.
+  - User data updates lack input validation.
+- MongoDB queries use Mongoose schema which provides basic protection.
 
 **Recommendations**:
 
-- Implement comprehensive input validation
+- Implement comprehensive input validation.
 
 **Reflection**:
 
-- Current implementation relies mostly on Mongoose schema validation
-- Adding proper input validation would prevent injection attacks and ensure data integrity
-- Input validation should be implemented both client-side and server-side
+- Current implementation relies mostly on Mongoose schema validation.
+- Adding proper input validation would prevent injection attacks and ensure data integrity.
+- Input validation should be implemented both client-side and server-side.
 
 ## A04:2021-Insecure Design
 
+**Findings**:
+
+- Main user can edit their guests' data, which may lead to privacy concerns.
+- No defined secure development lifecycle.
+- Automated testing and a CI/CD pipeline are currently missing.
+
+**Recommendations**:
+
+- Establish secure development practices.
+- Implement automated testing and a CI/CD pipeline.
+
+**Reflection**:
+
+- The current design prioritizes usability and the functional requirements of user data over security considerations.
+- Implementing a CI/CD pipeline along with automated testing would strengthen secure development practices.
+
 ## A05:2021-Security Misconfiguration
+
+**Findings**:
+
+- Sensitive credentials stored in environmental variables.
+- No validation for required environment variables.
+- Using Next.js and Vercel default security configurations.
+
+**Recommendations**:
+
+- Implement validation for all required environment variables.
+- Remove or disable development features like console logs and detailed error messages in the production environment.
+
+**Reflection**:
+
+- Basic security is handled well by Next.js and Vercel defaults.
+- There is a need for clearer separation between development and production configurations.
 
 ## A06:2021-Vulnerable and Outdated Components
 
+**Findings**:
+
+- The application uses several third-party libraries.
+- There is no automated process to monitor dependency versions and security vulnerabilities.
+- Dependencies use caret versioning, which keeps them up to date by updating possible minor updates but may lead to unintended updates.
+
+**Recommendations**:
+
+- Use tools to monitor and address vulnerabilities in dependencies, for example as part of the CI/CD pipeline.
+- Regularly update dependencies to their latest stable versions.
+
+**Reflection**:
+
+- Dependencies are relatively up to date, but lack automated monitoring.
+- Implementing automated security scanning would help identify vulnerabilities early.
+- Regular scheduling of dependency updates is recommended.
+
 ## A07:2021-Identification and Authentication Failures
+
+**Findings**:
+
+- Authentication relies solely on SMS OTP through Twilio Verify API.
+
+**Recommendations**:
+
+- Make sure to use proper OTP and session timeouts.
+- Check if Twilio Verify API security features fit for application needs.
+
+**Reflection**:
+
+- The simple authentication flow works well for the use case.
 
 ## A08:2021-Software and Data Integrity Failures
 
+**Findings**:
+
+- No integrity checks for npm packages during installation.
+- No validation for user inputs and data rendering.
+
+**Recommendations**:
+
+- Enable npm package integrity checks.
+- Validate and sanitize user input before saving to database.
+
+**Reflection**:
+
+- Basic data integrity controls are missing but can be easily implemented.
+- The current setup lacks robust security practices for dependency management. While only a few well-known and trusted dependencies are used at the moment, stronger practices will be beneficial as the application grows.
+
 ## A09:2021-Security Logging and Monitoring Failures
 
+**Findings**:
+
+- No application-level logging.
+- Twilio handles authentication-related logging.
+- Vercel handles deployment-related logging.
+
+**Recommendations**:
+
+**Reflection**:
+
+- Basic logging and monitoring features are handled by external services.
+- Current logging setup is sufficient for the application's needs.
+
 ## A10:2021-Server-Side Request Forgery
+
+**Findings**:
+
+- Application makes external HTTP requests to Twilio Verify API.
+- Phone numbers are validated through invitation list before making the API request.
+
+**Recommendations**:
+
+- Sanitize and validate user inputs before calling API routes.
+- Sanitize and validate user inputs in the API routes.
+
+**Reflection**:
+
+- Currently application has minor risk for SSRF, but with basic sanitization and validation it can be eliminated.
 
 # Future Improvements
