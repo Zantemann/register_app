@@ -45,7 +45,6 @@ After successful authentication, a new user session is created to verify the use
 
 **Risks**:
 
-- Session hijacking is possible if cookies are intercepted, though mitigated by HTTPS and secure cookie flags.
 - Users who fail to log out on shared devices may leave their sessions vulnerable to unauthorized access.
 
 ## Data Handling and Storage
@@ -60,6 +59,7 @@ User's personal data and session information are stored in a MongoDB database an
 **Security**:
 
 - User inputs are sanitized and validated before being saved to the database to prevent injection attacks and ensure data integrity.
+- Phone number validation uses the trusted and widely used libphonenumber-js library.
 - Users can only access and edit their own data and the data of their additional guests.
 - Access to the database is restricted to authorized services, ensuring that only authenticated and authorized operations are performed.
 
@@ -111,7 +111,7 @@ Evaluating Register App against the OWASP 2021 Top 10 security risks.
 
 **Recommendations**:
 
-- Encrypt sensitive data in the database using a strong encryption algorithm.
+- Consider encrypting sensitive data in the database using a strong encryption algorithm.
 
 **Reflection**:
 
@@ -127,16 +127,17 @@ Evaluating Register App against the OWASP 2021 Top 10 security risks.
   - OTP codes are validated only for length.
   - User data updates lack input validation.
 - MongoDB queries use Mongoose schema which provides basic protection.
+- Input validation implemented in both UI and API routes.
 
 **Recommendations**:
 
-- Implement comprehensive input validation.
-
 **Reflection**:
 
-- Current implementation relies mostly on Mongoose schema validation.
-- Adding proper input validation would prevent injection attacks and ensure data integrity.
-- Input validation should be implemented both client-side and server-side.
+- Current implementation has multiple layers of validation:
+  - Client-side validation in the UI.
+  - Server-side validation in API routes.
+- Basic protection for data saving through Mongoose.
+- Risk of injection attacks is minimal due to proper input validation.
 
 ## A04:2021-Insecure Design
 
@@ -218,11 +219,10 @@ Evaluating Register App against the OWASP 2021 Top 10 security risks.
 **Recommendations**:
 
 - Enable npm package integrity checks.
-- Validate and sanitize user input before saving to database.
+- Sanitize user input before saving to database.
 
 **Reflection**:
 
-- Basic data integrity controls are missing but can be easily implemented.
 - The current setup lacks robust security practices for dependency management. While only a few well-known and trusted dependencies are used at the moment, stronger practices will be beneficial as the application grows.
 
 ## A09:2021-Security Logging and Monitoring Failures
@@ -246,14 +246,15 @@ Evaluating Register App against the OWASP 2021 Top 10 security risks.
 
 - Application makes external HTTP requests to Twilio Verify API.
 - Phone numbers are validated through invitation list before making the API request.
+- User inputs have basic validation in both UI and API routes.
+- Input sanitization is handled by React's TSX rendering.
 
 **Recommendations**:
 
-- Sanitize and validate user inputs before calling API routes.
-- Sanitize and validate user inputs in the API routes.
+- The API routes are saving validated but unsanitized data to database, which is not a risk with MongoDB, but sanitization would be recommended for future development.
 
 **Reflection**:
 
-- Currently application has minor risk for SSRF, but with basic sanitization and validation it can be eliminated.
+- Currently application has minimal risk for SSRF.
 
 # Future Improvements

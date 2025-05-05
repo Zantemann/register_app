@@ -5,6 +5,7 @@ import { ISession, IUser } from '@/types';
 import { cookies } from 'next/headers';
 import Session from '@/models/sessionModel';
 import dbConnect from '@/lib/dbConnect';
+import User from '@/models/userModel';
 import { cache } from 'react';
 const SESSION_EXPIRATION_TIME = 60 * 60 * 24; // 1 day in seconds
 const COOKIE_SESSION_KEY = 'sessionId';
@@ -47,10 +48,12 @@ export const getSession = cache(async () => {
   await dbConnect();
   const session = await Session.findOne({ sessionId }).populate({
     path: 'userId',
+    model: User,
     populate: {
       path: 'guests',
     },
   });
+
   if (!session) {
     return;
   }
