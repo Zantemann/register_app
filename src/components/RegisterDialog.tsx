@@ -19,7 +19,7 @@ import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { useRouter } from 'next/navigation';
-import { AttendanceStatus, IUser } from '@/types';
+import { RegisterStatus, IUser } from '@/types';
 
 interface RegisterDialogProps {
   open: boolean;
@@ -73,7 +73,7 @@ export default function RegisterDialog({
   onClose,
   user,
 }: RegisterDialogProps): React.ReactElement {
-  const [registerStatus, setRegisterStatus] = useState<AttendanceStatus>(user.registerStatus);
+  const [registerStatus, setRegisterStatus] = useState<RegisterStatus>(user.registerStatus);
   const [allergies, setAllergies] = useState(user.allergies || '');
   const [guests, setGuests] = useState(user.guests || []);
   const [error, setError] = useState<string | null>(null);
@@ -88,14 +88,14 @@ export default function RegisterDialog({
     onClose();
   };
 
-  const handleStatusChange = (_: React.MouseEvent<HTMLElement>, value: AttendanceStatus) => {
+  const handleStatusChange = (_: React.MouseEvent<HTMLElement>, value: RegisterStatus) => {
     if (value !== null) {
       setRegisterStatus(value);
       setError(null);
     }
   };
 
-  const handleGuestStatusChange = (index: number, value: AttendanceStatus) => {
+  const handleGuestStatusChange = (index: number, value: RegisterStatus) => {
     if (value !== null) {
       const updatedGuests = [...guests];
       updatedGuests[index] = { ...updatedGuests[index], registerStatus: value };
@@ -252,6 +252,7 @@ export default function RegisterDialog({
               multiline
               rows={2}
               sx={{ mt: 3 }}
+              slotProps={{ htmlInput: { maxLength: 500 } }}
             />
           </Paper>
 
@@ -342,6 +343,7 @@ export default function RegisterDialog({
                         multiline
                         rows={2}
                         sx={{ mt: 3 }}
+                        slotProps={{ htmlInput: { maxLength: 500 } }}
                       />
                     </Box>
                   </Box>

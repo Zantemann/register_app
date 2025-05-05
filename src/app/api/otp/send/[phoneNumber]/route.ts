@@ -2,6 +2,7 @@ import User from '@/models/userModel';
 import dbConnect from '@/lib/dbConnect';
 import { NextResponse, NextRequest } from 'next/server';
 import twilio from 'twilio';
+import { isValidNumber, parseNumber } from '@/lib/validate';
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
 const authToken = process.env.TWILIO_AUTH_TOKEN as string;
@@ -18,12 +19,13 @@ export async function POST(
   try {
     const { phoneNumber } = await params;
 
-    if (!phoneNumber) {
-      return NextResponse.json({ error: 'Phone number is required' }, { status: 400 });
+    // Validate phone number
+    if (!isValidNumber(phoneNumber)) {
+      return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 });
     }
 
-    // Remove any non-digit characters except + from the phone number
-    const cleanPhoneNumber = phoneNumber.replace(/[^\d+]/g, '');
+    // Parse the phone number to E.164 format
+    const cleanPhoneNumber = parseNumber(phoneNumber);
 
     await dbConnect();
     const user = await User.findOne({ phoneNumber: cleanPhoneNumber });

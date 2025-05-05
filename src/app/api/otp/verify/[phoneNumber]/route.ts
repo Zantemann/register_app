@@ -3,6 +3,7 @@ import dbConnect from '@/lib/dbConnect';
 import { NextResponse, NextRequest } from 'next/server';
 import twilio from 'twilio';
 import { createSession } from '@/auth/session';
+import { isValidNumber, isValidOTP, parseNumber } from '@/lib/validate';
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
 const authToken = process.env.TWILIO_AUTH_TOKEN as string;
@@ -21,15 +22,16 @@ export async function POST(
     const body = await request.json();
     const { otp } = body;
 
-    if (!phoneNumber || !otp) {
-      return NextResponse.json(
-        { error: 'Phone number and OTP code are required' },
-        { status: 400 },
-      );
+    // Validate phone number and OTP
+    if (!isValidNumber(phoneNumber) || !isValidOTP(otp)) {
+      return NextResponse.json({ error: 'Invalid phone number or OTP' }, { status: 400 });
     }
 
+    // Parse the phone number to E.164 format
+    const cleanPhoneNumber = parseNumber(phoneNumber);
+
     await dbConnect();
-    const user = await User.findOne({ phoneNumber });
+    const user = await User.findOne({ phoneNumber: cleanPhoneNumber });
     if (!user) {
       return NextResponse.json(
         { error: 'Phone number not found from invitation list' },

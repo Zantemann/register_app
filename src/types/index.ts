@@ -1,10 +1,10 @@
-export type AttendanceStatus = 'attending' | 'not_attending' | 'not_responded';
+export type RegisterStatus = 'attending' | 'not_attending' | 'not_responded';
 
 export interface IUser {
   _id: string;
   fullName: string;
   phoneNumber?: string;
-  registerStatus: AttendanceStatus;
+  registerStatus: RegisterStatus;
   allergies?: string;
   guests: Array<IUser>;
 }

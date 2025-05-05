@@ -17,6 +17,7 @@ import {
 import { useState, useEffect } from 'react';
 import { MuiTelInput } from 'mui-tel-input';
 import { useRouter } from 'next/navigation';
+import { isValidNumber } from '@/lib/validate';
 
 const STEPS = ['Phone Number', 'Login Code'];
 const RESEND_TIMEOUT = 30; // seconds
@@ -54,16 +55,9 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps): React.Re
     setError(null);
   };
 
-  const formatPhoneNumber = (phone: string) => {
-    // Remove all non-digit characters except +
-    console.log('Formatting phone number:', phone);
-    return phone.replace(/[^\d+]/g, '');
-  };
-
   const handleResendCode = async () => {
     try {
-      const formattedPhone = formatPhoneNumber(phoneNumber);
-      const response = await fetch(`/api/otp/send/${formattedPhone}`, {
+      const response = await fetch(`/api/otp/send/${phoneNumber}`, {
         method: 'POST',
       });
 
@@ -82,8 +76,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps): React.Re
   const handleNext = async () => {
     try {
       if (activeStep === 0) {
-        const formattedPhone = formatPhoneNumber(phoneNumber);
-        const response = await fetch(`/api/otp/send/${formattedPhone}`, {
+        const response = await fetch(`/api/otp/send/${phoneNumber}`, {
           method: 'POST',
         });
 
@@ -95,8 +88,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps): React.Re
         setActiveStep(1);
         setResendTimer(RESEND_TIMEOUT);
       } else if (activeStep === 1) {
-        const formattedPhone = formatPhoneNumber(phoneNumber);
-        const response = await fetch(`/api/otp/verify/${formattedPhone}`, {
+        const response = await fetch(`/api/otp/verify/${phoneNumber}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -134,7 +126,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps): React.Re
 
   const isNextDisabled = () => {
     if (activeStep === 0) {
-      return !phoneNumber || phoneNumber.length < 9 || resendTimer > 0;
+      return !isValidNumber(phoneNumber) || resendTimer > 0;
     }
     if (activeStep === 1) {
       return !verificationCode || verificationCode.length !== 6;
