@@ -28,18 +28,7 @@ export default function RegisterButton({ user }: { user: IUser }): React.ReactEl
         onClick={handleOpen}
         size="large"
         sx={{
-          px: [3, 4, 6],
-          py: [1, 1.5],
-          minWidth: 200,
-          borderRadius: 2,
-          textTransform: 'none',
-          fontSize: '1rem',
-          ...(isFirstTime && {
-            bgcolor: 'primary.main',
-            '&:hover': {
-              bgcolor: 'primary.dark',
-            },
-          }),
+          px: 3,
         }}
       >
         {isFirstTime ? 'Register Now' : 'Update Attendance'}

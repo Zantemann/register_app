@@ -11,8 +11,8 @@ export default async function Home(): Promise<React.ReactElement> {
   const session = await getSession();
 
   return (
-    <Container maxWidth="md" sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
-      {session && <UserInfoBar user={session.userId} />}
+    <Container maxWidth="md">
+      <Box sx={{ pt: 2 }}>{session && <UserInfoBar user={session.userId} />}</Box>
       <Box
         sx={{
           display: 'flex',

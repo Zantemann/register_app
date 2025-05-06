@@ -3,6 +3,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
   TextField,
   Button,
   Box,
@@ -78,9 +79,14 @@ export default function RegisterDialog({
   const [guests, setGuests] = useState(user.guests || []);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
   // Reset form when dialog is closed
-  const handleClose = (_: object, _reason?: string) => {
-    // Reset form values when closing via backdrop, escape key, or cancel button
+  const handleClose = (_: object, reason?: string) => {
+    // Do not allow closing the dialog when clicking outside or pressing escape
+    if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+      return;
+    }
+
     setRegisterStatus(user.registerStatus);
     setAllergies(user.allergies || '');
     setGuests(user.guests || []);
@@ -142,34 +148,32 @@ export default function RegisterDialog({
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <Box sx={{ position: 'relative', bgcolor: 'background.paper' }}>
+      <Box sx={{ position: 'relative' }}>
         <Box
           sx={{
             bgcolor: 'primary.main',
-            pt: 6,
-            pb: 6,
+            py: 4,
             px: 3,
-            borderRadius: '4px 4px 0 0',
+            borderRadius: '2 2 0 0',
           }}
         >
           <Box sx={{ textAlign: 'center' }}>
             <CalendarTodayIcon sx={{ fontSize: 40, color: 'common.white', mb: 2 }} />
-            <Typography
+            <DialogTitle
               variant="h5"
-              component="div"
               sx={{
                 color: 'common.white',
                 mb: 1,
+                p: 0,
                 fontWeight: 500,
               }}
             >
               Event Registration
-            </Typography>
+            </DialogTitle>
             <Typography
-              variant="subtitle1"
+              variant="body1"
               sx={{
                 color: 'common.white',
-                opacity: 0.9,
                 maxWidth: 500,
                 mx: 'auto',
                 lineHeight: 1.5,
@@ -181,9 +185,9 @@ export default function RegisterDialog({
           </Box>
         </Box>
 
-        <DialogContent sx={{ pt: 4, pb: 4 }}>
+        <DialogContent sx={{ py: 4 }}>
           {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
+            <Alert severity="error" sx={{ px: 3, mb: 3, borderRadius: 2 }}>
               {error}
             </Alert>
           )}
@@ -191,150 +195,146 @@ export default function RegisterDialog({
           <Paper
             elevation={2}
             sx={{
-              p: 4,
+              p: 3,
               mb: 3,
               borderRadius: 2,
-              bgcolor: 'background.paper',
             }}
           >
-            <Box sx={{ mb: 3 }}>
-              <Typography
-                variant="h5"
-                gutterBottom
-                sx={{ fontWeight: 'medium', letterSpacing: 0.5 }}
-              >
-                {user.fullName}
-              </Typography>
-              <Box
-                sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'flex-start' }}
-              >
-                <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+            <Box
+              sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'flex-start' }}
+            >
+              <div>
+                <Typography variant="h5" gutterBottom sx={{ fontWeight: 'medium' }}>
+                  {user.fullName}
+                </Typography>
+                <Typography variant="body1" color="text.secondary" gutterBottom>
                   Please confirm your attendance
                 </Typography>
-                <ToggleButtonGroup
-                  value={registerStatus}
-                  exclusive
-                  onChange={handleStatusChange}
-                  aria-label="attendance status"
-                  size="large"
-                  sx={{
-                    '& .MuiToggleButton-root': {
-                      borderRadius: '8px !important',
-                      mx: 0.5,
-                      border: 'none',
-                      '&[value="attending"]': getStatusStyles('attending'),
-                      '&[value="not_attending"]': getStatusStyles('not_attending'),
-                      '&[value="not_responded"]': getStatusStyles('not_responded'),
-                    },
-                  }}
-                >
-                  <ToggleButton value="attending" aria-label="attending" sx={{ px: 3 }}>
-                    <CheckCircleIcon sx={{ mr: 1 }} />
-                    Attending
-                  </ToggleButton>
-                  <ToggleButton value="not_attending" aria-label="not attending" sx={{ px: 3 }}>
-                    <DoNotDisturbIcon sx={{ mr: 1 }} />
-                    Not Attending
-                  </ToggleButton>
-                  <ToggleButton value="not_responded" aria-label="not responded" sx={{ px: 3 }}>
-                    <HelpOutlineIcon sx={{ mr: 1 }} />
-                    Not Responded
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </Box>
+              </div>
+              <ToggleButtonGroup
+                value={registerStatus}
+                exclusive
+                onChange={handleStatusChange}
+                aria-label="attendance status"
+                size="small"
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 2,
+                  width: '100%',
+                  '& .MuiToggleButton-root': {
+                    borderRadius: '8px',
+                    border: 'none',
+                    '&[value="attending"]': getStatusStyles('attending'),
+                    '&[value="not_attending"]': getStatusStyles('not_attending'),
+                    '&[value="not_responded"]': getStatusStyles('not_responded'),
+                  },
+                }}
+              >
+                <ToggleButton value="attending" aria-label="attending" sx={{ px: 2 }}>
+                  <CheckCircleIcon sx={{ mr: 1 }} />
+                  Attending
+                </ToggleButton>
+                <ToggleButton value="not_attending" aria-label="not attending" sx={{ px: 2 }}>
+                  <DoNotDisturbIcon sx={{ mr: 1 }} />
+                  Not Attending
+                </ToggleButton>
+                <ToggleButton value="not_responded" aria-label="not responded" sx={{ px: 2 }}>
+                  <HelpOutlineIcon sx={{ mr: 1 }} />
+                  Not Responded
+                </ToggleButton>
+              </ToggleButtonGroup>
+              <TextField
+                label="Dietary Requirements or Preferences"
+                value={allergies}
+                onChange={(e) => setAllergies(e.target.value)}
+                fullWidth
+                multiline
+                rows={2}
+                sx={{
+                  mt: 2,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                  },
+                }}
+                slotProps={{ htmlInput: { maxLength: 500 } }}
+              />
             </Box>
-
-            <TextField
-              label="Dietary Requirements or Preferences"
-              value={allergies}
-              onChange={(e) => setAllergies(e.target.value)}
-              fullWidth
-              multiline
-              rows={2}
-              sx={{ mt: 3 }}
-              slotProps={{ htmlInput: { maxLength: 500 } }}
-            />
           </Paper>
 
           {guests.length > 0 && (
-            <Paper
-              elevation={2}
-              sx={{
-                p: 4,
-                borderRadius: 2,
-                bgcolor: 'background.paper',
-              }}
-            >
+            <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
               <Typography
-                variant="h6"
+                variant="h5"
                 gutterBottom
                 sx={{
                   color: 'primary.main',
-                  mb: 3,
+                  mb: 4,
                   fontWeight: 'medium',
-                  letterSpacing: 0.5,
                 }}
               >
                 Additional Guests
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 {guests.map((guest, index) => (
                   <Box key={index}>
                     {index > 0 && <Divider sx={{ my: 4 }} />}
-                    <Box>
-                      <Typography variant="h6" gutterBottom sx={{ fontWeight: 'medium' }}>
-                        {guest.fullName}
-                      </Typography>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 2,
-                          alignItems: 'flex-start',
-                        }}
-                      >
-                        <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        gap: 2,
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                      }}
+                    >
+                      <div>
+                        <Typography variant="h6" gutterBottom sx={{ fontWeight: 'medium' }}>
+                          {guest.fullName}
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary" gutterBottom>
                           Please confirm their attendance
                         </Typography>
-                        <ToggleButtonGroup
-                          value={guest.registerStatus}
-                          exclusive
-                          onChange={(_, v) => handleGuestStatusChange(index, v)}
-                          aria-label="guest attendance status"
-                          size="large"
-                          sx={{
-                            '& .MuiToggleButton-root': {
-                              borderRadius: '8px !important',
-                              mx: 0.5,
-                              border: 'none',
-                              '&[value="attending"]': getStatusStyles('attending'),
-                              '&[value="not_attending"]': getStatusStyles('not_attending'),
-                              '&[value="not_responded"]': getStatusStyles('not_responded'),
-                            },
-                          }}
+                      </div>
+                      <ToggleButtonGroup
+                        value={guest.registerStatus}
+                        exclusive
+                        onChange={(_, v) => handleGuestStatusChange(index, v)}
+                        aria-label="guest attendance status"
+                        size="small"
+                        sx={{
+                          display: 'flex',
+                          flexWrap: 'wrap',
+                          gap: 2,
+                          '& .MuiToggleButton-root': {
+                            borderRadius: 2,
+                            border: 'none',
+                            '&[value="attending"]': getStatusStyles('attending'),
+                            '&[value="not_attending"]': getStatusStyles('not_attending'),
+                            '&[value="not_responded"]': getStatusStyles('not_responded'),
+                          },
+                        }}
+                      >
+                        <ToggleButton value="attending" aria-label="attending" sx={{ px: 2 }}>
+                          <CheckCircleIcon sx={{ mr: 1 }} />
+                          Attending
+                        </ToggleButton>
+                        <ToggleButton
+                          value="not_attending"
+                          aria-label="not attending"
+                          sx={{ px: 2 }}
                         >
-                          <ToggleButton value="attending" aria-label="attending" sx={{ px: 3 }}>
-                            <CheckCircleIcon sx={{ mr: 1 }} />
-                            Attending
-                          </ToggleButton>
-                          <ToggleButton
-                            value="not_attending"
-                            aria-label="not attending"
-                            sx={{ px: 3 }}
-                          >
-                            <DoNotDisturbIcon sx={{ mr: 1 }} />
-                            Not Attending
-                          </ToggleButton>
-                          <ToggleButton
-                            value="not_responded"
-                            aria-label="not responded"
-                            sx={{ px: 3 }}
-                          >
-                            <HelpOutlineIcon sx={{ mr: 1 }} />
-                            Not Responded
-                          </ToggleButton>
-                        </ToggleButtonGroup>
-                      </Box>
+                          <DoNotDisturbIcon sx={{ mr: 1 }} />
+                          Not Attending
+                        </ToggleButton>
+                        <ToggleButton
+                          value="not_responded"
+                          aria-label="not responded"
+                          sx={{ px: 2 }}
+                        >
+                          <HelpOutlineIcon sx={{ mr: 1 }} />
+                          Not Responded
+                        </ToggleButton>
+                      </ToggleButtonGroup>
                       <TextField
                         label="Dietary Requirements or Preferences"
                         value={guest.allergies || ''}
@@ -342,7 +342,12 @@ export default function RegisterDialog({
                         fullWidth
                         multiline
                         rows={2}
-                        sx={{ mt: 3 }}
+                        sx={{
+                          mt: 2,
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 2,
+                          },
+                        }}
                         slotProps={{ htmlInput: { maxLength: 500 } }}
                       />
                     </Box>
@@ -357,27 +362,11 @@ export default function RegisterDialog({
               onClick={() => handleClose({}, 'cancel')}
               variant="outlined"
               size="large"
-              sx={{
-                borderRadius: 2,
-                px: 4,
-                textTransform: 'none',
-                fontSize: '1rem',
-              }}
+              sx={{ px: 3 }}
             >
               Cancel
             </Button>
-            <Button
-              variant="contained"
-              onClick={handleSubmit}
-              size="large"
-              sx={{
-                borderRadius: 2,
-                px: 4,
-                textTransform: 'none',
-                fontSize: '1rem',
-                bgcolor: 'primary.main',
-              }}
-            >
+            <Button onClick={handleSubmit} variant="contained" size="large" sx={{ px: 3 }}>
               Update Status
             </Button>
           </Box>

@@ -2,6 +2,15 @@
 
 This document outlines the security aspects of the application, including authentication, authorization, session handling, and data handling and storage.
 
+## Deployment
+
+The application is deployed to Vercel:
+
+- URL: https://register-app-vert.vercel.app/
+- Uses automatic HTTPS encryption
+- Protected by Vercel's Edge Network
+- Database hosted on MongoDB Atlas
+
 ## Authentication
 
 The application uses **Twilio Verify API** for phone number-based passwordless authentication via SMS. Check more from [Twilio Verify API Documentation](https://www.twilio.com/docs/verify/api).

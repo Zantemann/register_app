@@ -2,8 +2,8 @@
 
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
+  DialogTitle,
   Stepper,
   Step,
   StepLabel,
@@ -109,14 +109,13 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps): React.Re
     }
   };
 
-  const handleBack = () => {
-    setActiveStep((prev) => prev - 1);
-    setError(null);
-    setVerificationCode('');
-  };
-
   // Reset form values when closing via backdrop, escape key, or cancel button
-  const handleClose = (_: object, _reason?: string) => {
+  const handleClose = (_: object, reason?: string) => {
+    // Do not allow closing the dialog when clicking outside or pressing escape
+    if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+      return;
+    }
+
     setPhoneNumber('');
     setVerificationCode('');
     setActiveStep(0);
@@ -136,91 +135,120 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps): React.Re
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Login with Phone Number</DialogTitle>
-      <DialogContent>
-        <Stepper activeStep={activeStep} sx={{ py: 4 }}>
-          {STEPS.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
+      <Box sx={{ position: 'relative' }}>
+        <Box
+          sx={{
+            bgcolor: 'primary.main',
+            py: 4,
+            px: 3,
+            borderRadius: '2 2 0 0',
+          }}
+        >
+          <DialogTitle
+            variant="h5"
+            sx={{
+              color: 'common.white',
+              fontWeight: 500,
+              p: 0,
+              textAlign: 'center',
+            }}
+          >
+            Login with Phone Number
+          </DialogTitle>
+        </Box>
+        <DialogContent sx={{ py: 4 }}>
+          <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+            {STEPS.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-
-        <Box sx={{ mt: 2 }}>
-          {activeStep === 0 && (
-            <>
-              <Typography gutterBottom>Enter your phone number to receive a login code</Typography>
-              <MuiTelInput
-                value={phoneNumber}
-                onChange={handlePhoneChange}
-                fullWidth
-                defaultCountry="FI"
-              />
-              {resendTimer > 0 && (
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                  You can request a new code in {resendTimer} seconds
-                </Typography>
-              )}
-            </>
+          {error && (
+            <Alert severity="error" sx={{ px: 2, borderRadius: 2 }}>
+              {error}
+            </Alert>
           )}
 
-          {activeStep === 1 && (
-            <>
-              <Typography gutterBottom>
-                Enter the 6-digit login code sent to {phoneNumber}
-              </Typography>
-              <TextField
-                value={verificationCode}
-                onChange={handleVerificationCodeChange}
-                fullWidth
-                placeholder="000000"
-                inputProps={{ maxLength: 6, pattern: '[0-9]*' }}
-              />
-              <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Did not receive the code?
+          <Box sx={{ mt: 3 }}>
+            {activeStep === 0 && (
+              <>
+                <Typography variant="body1" gutterBottom>
+                  Enter your phone number to receive a login code
                 </Typography>
-                {resendTimer > 0 ? (
-                  <Typography variant="body2" color="text.secondary">
+                <MuiTelInput
+                  value={phoneNumber}
+                  onChange={handlePhoneChange}
+                  fullWidth
+                  defaultCountry="FI"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+                {resendTimer > 0 && (
+                  <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
                     You can request a new code in {resendTimer} seconds
                   </Typography>
-                ) : (
-                  <Link
-                    component="button"
-                    variant="body2"
-                    onClick={handleResendCode}
-                    sx={{ alignSelf: 'flex-start' }}
-                  >
-                    Send a new code
-                  </Link>
                 )}
-              </Box>
-            </>
-          )}
-        </Box>
-
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-          <Button onClick={handleClose} color="inherit">
-            Cancel
-          </Button>
-          <Box>
-            {activeStep > 0 && (
-              <Button onClick={handleBack} sx={{ mr: 1 }}>
-                Back
-              </Button>
+              </>
             )}
-            <Button variant="contained" onClick={handleNext} disabled={isNextDisabled()}>
+
+            {activeStep === 1 && (
+              <>
+                <Typography variant="body1" gutterBottom>
+                  Enter the 6-digit login code sent to {phoneNumber}
+                </Typography>
+                <TextField
+                  value={verificationCode}
+                  onChange={handleVerificationCodeChange}
+                  fullWidth
+                  placeholder="000000"
+                  slotProps={{ htmlInput: { maxLength: 6, pattern: '[0-9]*' } }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+                <Box
+                  sx={{ mt: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
+                >
+                  <Typography variant="body1" color="text.secondary" gutterBottom>
+                    Did not receive the code?
+                  </Typography>
+                  {resendTimer > 0 ? (
+                    <Typography variant="body1" color="text.secondary">
+                      You can request a new code in {resendTimer} seconds
+                    </Typography>
+                  ) : (
+                    <Link component="button" variant="body1" onClick={handleResendCode}>
+                      Send a new code
+                    </Link>
+                  )}
+                </Box>
+              </>
+            )}
+          </Box>
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4, gap: 2 }}>
+            <Button onClick={handleClose} variant="outlined" size="large" sx={{ px: 3 }}>
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleNext}
+              disabled={isNextDisabled()}
+              size="large"
+              sx={{ px: 3 }}
+            >
               {activeStep === STEPS.length - 1 ? 'Login' : 'Next'}
             </Button>
           </Box>
-        </Box>
-      </DialogContent>
+        </DialogContent>
+      </Box>
     </Dialog>
   );
 }

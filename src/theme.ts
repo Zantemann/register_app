@@ -66,6 +66,15 @@ const baseTheme = createTheme({
         },
       },
     },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          borderRadius: 8,
+          margin: '16px',
+          width: '100%',
+        },
+      },
+    },
   },
 });
 

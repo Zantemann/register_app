@@ -23,9 +23,7 @@ export default function LoginButton(): React.ReactElement {
         size="large"
         startIcon={<PhoneIcon />}
         sx={{
-          px: [3, 4, 6],
-          py: [1, 1.5],
-          minWidth: 200,
+          px: 3,
         }}
         onClick={handleOpenDialog}
       >

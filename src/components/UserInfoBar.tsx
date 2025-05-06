@@ -8,22 +8,19 @@ export default function UserInfoBar({ user }: { user: IUser }): React.ReactEleme
     <Paper
       elevation={0}
       sx={{
-        position: 'fixed',
-        top: 16,
-        right: 16,
         px: 2,
         py: 1,
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
         gap: 2,
-        bgcolor: 'background.paper',
         border: '1px solid',
         borderColor: 'divider',
         borderRadius: 2,
-        zIndex: 1000,
       }}
     >
-      <Typography variant="body2" color="text.secondary">
+      <Typography variant="body1" color="text.secondary">
         {user.fullName}
       </Typography>
       <Button
@@ -31,7 +28,7 @@ export default function UserInfoBar({ user }: { user: IUser }): React.ReactEleme
         size="small"
         startIcon={<LogoutIcon />}
         onClick={deleteSession}
-        sx={{ textTransform: 'none' }}
+        sx={{ px: 3 }}
       >
         Logout
       </Button>
