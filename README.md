@@ -10,9 +10,25 @@ Register App is a web application designed to simplify event management and atte
 
 ## Technologies
 
+### Framwork and languages
+
 - Next.js
+  - React
+  - Node.js
+- TypeScript
+
+### Main libraries/services
+
+- Material UI
 - MongoDB
 - Twilio Verify API
+- GitHub
+- Vercel
+
+### Static code analysis
+
+- ESLint
+- Prettier
 
 ## Security documentation
 

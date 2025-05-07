@@ -266,4 +266,44 @@ Evaluating Register App against the OWASP 2021 Top 10 security risks.
 
 - Currently application has minimal risk for SSRF.
 
-# Future Improvements
+# Testing
+
+## Manual Testing
+
+- The application has undergone manual user testing.
+- API endpoints have been tested using Postman.
+- Testing focused on:
+
+  - Authentication
+  - Input/data validation
+  - Data updates
+  - Session handling
+  - User permissions
+  - UI functionality on Chrome (Windows and Android)
+
+## Static Analysis
+
+- Code quality is enforced using:
+  - ESLint for TypeScript linting
+  - Prettier for code formatting
+  - TypeScript for type checking
+
+## Conclusion
+
+- The application's UI functions as intended.
+- No errors, bugs or critical security risks were identified.
+- More detailed unit testing is recommended in the future for the API routes.
+
+# Future Improvements to do
+
+## Development and Testing
+
+- Unit testing
+- Security scanning for dependecies
+- Automate testing and scanning with CI/CD pipeline
+
+## Security
+
+- Logging for security-critical events
+- Database encryption for sensitive data
+- Proper validation for environment variables
