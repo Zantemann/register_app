@@ -21,7 +21,7 @@ export async function POST(
 
     // Validate phone number
     if (!isValidNumber(phoneNumber)) {
-      return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 });
+      return NextResponse.json({ error: 'Please enter a valid phone number' }, { status: 400 });
     }
 
     // Parse the phone number to E.164 format
@@ -31,7 +31,7 @@ export async function POST(
     const user = await User.findOne({ phoneNumber: cleanPhoneNumber });
     if (!user) {
       return NextResponse.json(
-        { error: 'Phone number not found from invitation list' },
+        { error: 'This phone number is not in the invitation list' },
         { status: 404 },
       );
     }
@@ -39,17 +39,32 @@ export async function POST(
     // for testing purposes
     // return NextResponse.json({ status: 200 });
 
-    const twilioResponse = await client.verify.v2.services(serviceId).verifications.create({
-      channel: 'sms',
-      to: cleanPhoneNumber,
-    });
+    try {
+      const twilioResponse = await client.verify.v2.services(serviceId).verifications.create({
+        channel: 'sms',
+        to: cleanPhoneNumber,
+      });
 
-    if (twilioResponse.status === 'pending') {
-      return NextResponse.json({ status: 200 });
-    } else {
-      return NextResponse.json({ error: 'Failed to send OTP' }, { status: 500 });
+      if (twilioResponse.status === 'pending') {
+        return NextResponse.json({ status: 200 });
+      } else {
+        return NextResponse.json(
+          { error: 'Unable to send verification code. Please try again.' },
+          { status: 500 },
+        );
+      }
+    } catch {
+      return NextResponse.json(
+        {
+          error: 'Unable to send verification code. Please try again later.',
+        },
+        { status: 500 },
+      );
     }
-  } catch (err) {
-    return NextResponse.json({ error: 'Internal server error', err }, { status: 500 });
+  } catch {
+    return NextResponse.json(
+      { error: 'Service unavailable. Please try again later.' },
+      { status: 500 },
+    );
   }
 }

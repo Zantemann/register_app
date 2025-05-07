@@ -22,7 +22,19 @@ export async function PUT(
 ) {
   try {
     const { userId } = await params;
-    const body = (await request.json()) as UpdateUserBody;
+
+    let body: UpdateUserBody;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        {
+          error: 'Invalid request format',
+        },
+        { status: 400 },
+      );
+    }
+
     const { registerStatus, allergies, guests } = body;
 
     if (!userId) {
@@ -30,13 +42,16 @@ export async function PUT(
     }
 
     // Validate register status
-    if (!registerStatus || !isValidRegisterStatus(registerStatus)) {
-      return NextResponse.json({ error: 'Invalid registration status' }, { status: 400 });
+    if (!isValidRegisterStatus(registerStatus)) {
+      return NextResponse.json(
+        { error: 'Please select a valid registration status' },
+        { status: 400 },
+      );
     }
 
     // Validate allergies if provided
     if (allergies !== undefined && !isValidAllergies(allergies)) {
-      return NextResponse.json({ error: 'Invalid allergies' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid allergies format' }, { status: 400 });
     }
 
     // Validate guests data if provided
@@ -47,13 +62,13 @@ export async function PUT(
         }
         if (!isValidRegisterStatus(guest.registerStatus)) {
           return NextResponse.json(
-            { error: `Invalid registration status for guest ${guest._id}` },
+            { error: `Please select a valid registration status for guest` },
             { status: 400 },
           );
         }
         if (guest.allergies !== undefined && !isValidAllergies(guest.allergies)) {
           return NextResponse.json(
-            { error: `Invalid allergies format for guest ${guest._id}` },
+            { error: `Invalid allergies format for guest` },
             { status: 400 },
           );
         }
@@ -63,7 +78,10 @@ export async function PUT(
     // Get session to check if the user is authorized to update their own information
     const currentSession = await getSession();
     if (currentSession?.userId._id !== userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'You are not authorized to update this information' },
+        { status: 401 },
+      );
     }
 
     await dbConnect();
@@ -72,31 +90,41 @@ export async function PUT(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Update main user's information
-    user.registerStatus = registerStatus;
-    user.allergies = allergies;
+    try {
+      // Update main user's information
+      user.registerStatus = registerStatus;
+      user.allergies = allergies;
 
-    // Update guests
-    if (guests && Array.isArray(guests)) {
-      for (const guest of guests) {
-        if (currentSession?.userId.guests.some((g) => g._id === guest._id)) {
-          const existingGuest = await User.findById(guest._id);
-          if (existingGuest) {
-            existingGuest.registerStatus = guest.registerStatus;
-            if (guest.allergies !== undefined) {
-              existingGuest.allergies = guest.allergies;
+      // Update guests
+      if (guests && Array.isArray(guests)) {
+        for (const guest of guests) {
+          if (currentSession?.userId.guests.some((g) => g._id === guest._id)) {
+            const existingGuest = await User.findById(guest._id);
+            if (existingGuest) {
+              existingGuest.registerStatus = guest.registerStatus;
+              if (guest.allergies !== undefined) {
+                existingGuest.allergies = guest.allergies;
+              }
+              await existingGuest.save();
             }
-            await existingGuest.save();
           }
         }
       }
+
+      await user.save();
+      const updatedUser = await User.findById(userId).populate('guests');
+
+      return NextResponse.json({ user: updatedUser }, { status: 200 });
+    } catch {
+      return NextResponse.json(
+        { error: 'Failed to update registration. Please try again.' },
+        { status: 500 },
+      );
     }
-
-    await user.save();
-    const updatedUser = await User.findById(userId).populate('guests');
-
-    return NextResponse.json({ user: updatedUser }, { status: 200 });
-  } catch (err) {
-    return NextResponse.json({ error: 'Internal server error', err }, { status: 500 });
+  } catch {
+    return NextResponse.json(
+      { error: 'Unable to process your request. Please try again later.' },
+      { status: 500 },
+    );
   }
 }

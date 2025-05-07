@@ -19,12 +19,30 @@ export async function POST(
 ) {
   try {
     const { phoneNumber } = await params;
-    const body = await request.json();
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        {
+          error: 'Please provide a verification code',
+        },
+        { status: 400 },
+      );
+    }
+
     const { otp } = body;
 
-    // Validate phone number and OTP
-    if (!isValidNumber(phoneNumber) || !isValidOTP(otp)) {
-      return NextResponse.json({ error: 'Invalid phone number or OTP' }, { status: 400 });
+    if (!isValidNumber(phoneNumber)) {
+      return NextResponse.json({ error: 'Please enter a valid phone number' }, { status: 400 });
+    }
+
+    if (!isValidOTP(otp)) {
+      return NextResponse.json(
+        { error: 'Please enter a valid verification code' },
+        { status: 400 },
+      );
     }
 
     // Parse the phone number to E.164 format
@@ -34,7 +52,7 @@ export async function POST(
     const user = await User.findOne({ phoneNumber: cleanPhoneNumber });
     if (!user) {
       return NextResponse.json(
-        { error: 'Phone number not found from invitation list' },
+        { error: 'This phone number is not in the invitation list' },
         { status: 404 },
       );
     }
@@ -43,18 +61,31 @@ export async function POST(
     //await createSession(user);
     //return NextResponse.json({ user }, { status: 200 });
 
-    const twilioResponse = await client.verify.v2.services(serviceId).verificationChecks.create({
-      to: cleanPhoneNumber,
-      code: otp,
-    });
+    try {
+      const twilioResponse = await client.verify.v2.services(serviceId).verificationChecks.create({
+        to: cleanPhoneNumber,
+        code: otp,
+      });
 
-    if (twilioResponse.status === 'approved') {
-      await createSession(user);
-      return NextResponse.json({ user }, { status: 200 });
-    } else {
-      return NextResponse.json({ error: 'Invalid OTP code' }, { status: 400 });
+      if (twilioResponse.status === 'approved') {
+        await createSession(user);
+        return NextResponse.json({ user }, { status: 200 });
+      } else {
+        return NextResponse.json(
+          { error: 'Invalid verification code. Please try again.' },
+          { status: 400 },
+        );
+      }
+    } catch {
+      return NextResponse.json(
+        { error: 'Unable to verify code. Please try again.' },
+        { status: 500 },
+      );
     }
-  } catch (err) {
-    return NextResponse.json({ error: 'Internal server error', err }, { status: 500 });
+  } catch {
+    return NextResponse.json(
+      { error: 'Verification service unavailable. Please try again later.' },
+      { status: 500 },
+    );
   }
 }
