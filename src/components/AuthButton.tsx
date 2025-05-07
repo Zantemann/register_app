@@ -22,9 +22,7 @@ export default function LoginButton(): React.ReactElement {
         variant="contained"
         size="large"
         startIcon={<PhoneIcon />}
-        sx={{
-          px: 3,
-        }}
+        sx={{ px: 3 }}
         onClick={handleOpenDialog}
       >
         Login with Phone

@@ -134,7 +134,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps): React.Re
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth closeAfterTransition={false}>
       <Box sx={{ position: 'relative' }}>
         <Box
           sx={{

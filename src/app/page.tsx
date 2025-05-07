@@ -12,7 +12,11 @@ export default async function Home(): Promise<React.ReactElement> {
 
   return (
     <Container maxWidth="md">
-      <Box sx={{ pt: 2 }}>{session && <UserInfoBar user={session.userId} />}</Box>
+      {session && (
+        <Box sx={{ pt: 2 }}>
+          <UserInfoBar user={session.userId} />
+        </Box>
+      )}
       <Box
         sx={{
           display: 'flex',

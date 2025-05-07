@@ -37,14 +37,14 @@ export async function POST(
     }
 
     // for testing purposes
-    return NextResponse.json({ status: 200 });
+    // return NextResponse.json({ status: 200 });
 
     const twilioResponse = await client.verify.v2.services(serviceId).verifications.create({
       channel: 'sms',
-      to: phoneNumber,
+      to: cleanPhoneNumber,
     });
 
-    if (twilioResponse.status === 'approved') {
+    if (twilioResponse.status === 'pending') {
       return NextResponse.json({ status: 200 });
     } else {
       return NextResponse.json({ error: 'Failed to send OTP' }, { status: 500 });

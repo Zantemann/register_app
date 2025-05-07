@@ -40,11 +40,11 @@ export async function POST(
     }
 
     // for testing purposes
-    await createSession(user);
-    return NextResponse.json({ user }, { status: 200 });
+    //await createSession(user);
+    //return NextResponse.json({ user }, { status: 200 });
 
     const twilioResponse = await client.verify.v2.services(serviceId).verificationChecks.create({
-      to: phoneNumber,
+      to: cleanPhoneNumber,
       code: otp,
     });
 

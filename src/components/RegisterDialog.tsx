@@ -147,7 +147,7 @@ export default function RegisterDialog({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth closeAfterTransition={false}>
       <Box sx={{ position: 'relative' }}>
         <Box
           sx={{
