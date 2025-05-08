@@ -10,6 +10,7 @@ The application is deployed to Vercel:
 - Uses automatic HTTPS encryption
 - Protected by Vercel's Edge Network
 - Database hosted on MongoDB Atlas
+- Vercell "pipeline" automately deploy the application after every commit to main branch
 
 ## Authentication
 
@@ -307,3 +308,9 @@ Evaluating Register App against the OWASP 2021 Top 10 security risks.
 - Logging for security-critical events
 - Database encryption for sensitive data
 - Proper validation for environment variables
+
+# AI Usage
+
+- Cursor (AI Code Editor): Used at the start of development to help generating the initial UI, which was later mostly modified and fixed.
+- GitHub Copilot: Used to review existing documentation, suggest improvements, and identify security risks that I missed.
+- AI Used: Claude 3.5 Sonnet in both cases.

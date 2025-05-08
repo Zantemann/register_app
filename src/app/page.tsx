@@ -24,16 +24,15 @@ export default async function Home(): Promise<React.ReactElement> {
           alignItems: 'center',
           py: [3, 6, 8],
           textAlign: 'center',
-          width: '100%',
         }}
       >
         <EventIcon sx={{ fontSize: [40, 48, 60], color: 'primary.main', mb: 4 }} />
 
-        <Typography variant="h1" component="h1" gutterBottom>
+        <Typography variant="h1" gutterBottom>
           Tech Conference 2024
         </Typography>
 
-        <Typography variant="h2" component="h2" color="text.secondary" gutterBottom>
+        <Typography variant="h2" color="text.secondary" gutterBottom>
           An exclusive tech leadership event
         </Typography>
 
@@ -43,7 +42,6 @@ export default async function Home(): Promise<React.ReactElement> {
             p: [2, 3, 4],
             mt: [3, 4],
             mb: [4, 6],
-            width: '100%',
             borderRadius: 2,
           }}
         >
@@ -60,20 +58,15 @@ export default async function Home(): Promise<React.ReactElement> {
               gap: [2, 3],
               justifyContent: 'center',
               alignItems: 'center',
-              mt: [3, 4],
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <CalendarTodayIcon color="primary" />
-              <Typography variant="h6" component="div">
-                June 15-16, 2024
-              </Typography>
+              <Typography variant="h6">June 15-16, 2024</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <LocationOnIcon color="primary" />
-              <Typography variant="h6" component="div">
-                Tech Center
-              </Typography>
+              <Typography variant="h6">Tech Center</Typography>
             </Box>
           </Box>
         </Paper>
